@@ -31,6 +31,7 @@ import AutoIcon from "../icons/auto.svg";
 import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
 import RobotIcon from "../icons/robot.svg";
+import FileIcon from "../icons/file.svg";
 
 import {
   ChatMessage,
@@ -416,6 +417,19 @@ export function ChatActions(props: {
     [config.models],
   );
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showFileSelector, setShowFileSelector] = useState(false);
+
+  function onFileInputChange(e: any) {
+    console.log(e);
+    const files = e.nativeEvent.target.files;
+    const file = files?.[0];
+    window.selectedFile = file;
+  }
+
+  function clearFile() {
+    window.selectedFile = undefined;
+    showToast("已经清除选中的文件");
+  }
 
   return (
     <div className={styles["chat-input-actions"]}>
@@ -491,6 +505,51 @@ export function ChatActions(props: {
         text={currentModel}
         icon={<RobotIcon />}
       />
+
+      <ChatAction
+        onClick={() => {
+          setShowFileSelector(true);
+        }}
+        text={"选取文件"}
+        icon={<FileIcon />}
+      />
+
+      {showFileSelector && (
+        <div className="modal-mask">
+          <Modal
+            title="选取本地文件"
+            onClose={() => setShowFileSelector(false)}
+            actions={[
+              <IconButton
+                text="清除"
+                key={1}
+                bordered
+                shadow
+                onClick={() => {
+                  clearFile();
+                  setShowFileSelector(false);
+                }}
+              />,
+              <IconButton
+                text="确认"
+                key={2}
+                bordered
+                shadow
+                onClick={() => {
+                  setShowFileSelector(false);
+                  if (window.selectedFile) {
+                    showToast("已选择一个文件");
+                  }
+                }}
+              />,
+            ]}
+          >
+            <div className="">
+              <input type="file" onChange={onFileInputChange}></input>
+            </div>
+          </Modal>
+        </div>
+      )}
 
       {showModelSelector && (
         <Selector

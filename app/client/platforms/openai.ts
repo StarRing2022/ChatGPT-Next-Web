@@ -75,10 +75,22 @@ export class ChatGPTApi implements LLMApi {
       const chatPath = this.path(OpenaiPath.ChatPath);
       const chatPayload = {
         method: "POST",
-        body: JSON.stringify(requestPayload),
+        body: JSON.stringify(requestPayload) as any,
         signal: controller.signal,
         headers: getHeaders(),
       };
+
+      // 如果需要发送文件
+      if (window.selectedFile) {
+        const formData = new FormData();
+        formData.append("data", chatPayload.body);
+        formData.append("file", window.selectedFile);
+        chatPayload.body = formData;
+        chatPayload.headers = new Headers({
+          ...chatPayload.headers,
+          "Content-Type": "multipart/form-data",
+        }) as any;
+      }
 
       // make a fetch request
       const requestTimeoutId = setTimeout(

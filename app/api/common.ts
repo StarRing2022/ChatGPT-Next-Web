@@ -27,6 +27,20 @@ export async function requestOpenai(req: NextRequest) {
     console.log("[Org ID]", process.env.OPENAI_ORG_ID);
   }
 
+  // 尝试解析表单数据
+  let body = req.body;
+  if (req.headers.get("content-type")?.includes("form")) {
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    const data = formData.get("data");
+    // 在这里可以获取到文件数据，file.stream()，或者 file.arrayBuffer()
+    // 详见：https://developer.mozilla.org/en-US/docs/Web/API/File#instance_methods
+    console.log("[读取文件数据]", file, file.name, file.stream(), data);
+    if (data) {
+      body = data as any;
+    }
+  }
+
   const timeoutId = setTimeout(() => {
     controller.abort();
   }, 10 * 60 * 1000);
@@ -42,7 +56,7 @@ export async function requestOpenai(req: NextRequest) {
     },
     cache: "no-store",
     method: req.method,
-    body: req.body,
+    body: body,
     // @ts-ignore
     duplex: "half",
     signal: controller.signal,
